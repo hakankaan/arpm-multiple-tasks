@@ -4,7 +4,8 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Services\PostService;
-use App\Http\Controllers\Controller;
+use App\Exceptions\PostCreationException;
+use App\Exceptions\InvalidParameterException;
 
 class PostController extends Controller
 {
@@ -17,20 +18,21 @@ class PostController extends Controller
 
     public function createPost(Request $request)
     {
-        $authorId = $request->input('author_id');
-        $title = $request->input('title');
-        $categoryId = $request->input('category_id');
+        try {
+            $authorId = $request->input('author_id');
+            $title = $request->input('title');
+            $categoryId = $request->input('category_id');
 
-        if (!$authorId || !$title || !$categoryId) {
-            return response()->json(['error' => 'Missing parameters'], 400);
-        }
+            if (!$authorId || !$title || !$categoryId) {
+                throw new InvalidParameterException("Missing or invalid parameters.");
+            }
 
-        $result = $this->postService->createPost((int) $authorId, $title, (int) $categoryId);
-
-        if ($result === "Post created successfully!") {
-            return response()->json(['message' => $result], 201);
-        } else {
-            return response()->json(['error' => $result], 400);
+            $message = $this->postService->createPost((int) $authorId, $title, (int) $categoryId);
+            return response()->json(['message' => $message], 201);
+        } catch (InvalidParameterException $e) {
+            return response()->json(['error' => $e->getMessage()], $e->getCode());
+        } catch (PostCreationException $e) {
+            return response()->json(['error' => $e->getMessage()], $e->getCode());
         }
     }
 }

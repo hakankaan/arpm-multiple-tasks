@@ -6,6 +6,8 @@ use App\Models\BlogPost;
 use Illuminate\Support\Facades\DB;
 use App\Repositories\PostRepositoryInterface;
 use App\Repositories\CategoryRepositoryInterface;
+use App\Exceptions\PostCreationException;
+use App\Exceptions\InvalidParameterException;
 
 class PostService
 {
@@ -21,11 +23,11 @@ class PostService
     public function createPost(int $author_id, string $title, int $categoryId): string
     {
         if (!$this->categoryRepository->exists($categoryId)) {
-            return "Invalid category ID!";
+            throw new InvalidParameterException("Invalid category ID!");
         }
 
         if ($this->postRepository->existsByTitleAndAuthor($title, $author_id)) {
-            return "Title already exists.";
+            throw new PostCreationException("Title already exists.");
         }
 
         DB::beginTransaction();
@@ -37,14 +39,13 @@ class PostService
             ]);
 
             $this->postRepository->save($post);
-
             $this->postRepository->attachCategory($post->id, $categoryId);
 
             DB::commit();
             return "Post created successfully!";
         } catch (\Exception $e) {
             DB::rollback();
-            return "Failed to create post: " . $e->getMessage();
+            throw new PostCreationException("Failed to create post: " . $e->getMessage());
         }
     }
 }
