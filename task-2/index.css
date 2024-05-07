@@ -1,0 +1,48 @@
+:root {
+  --spotlight-width: 40px;
+}
+
+body {
+  margin: 0;
+  height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: black;
+  color: white;
+  font-size: 40px;
+}
+
+.spotlight-container {
+  position: relative;
+  display: inline-block;
+}
+
+.text {
+  position: relative;
+  z-index: 1;
+  mix-blend-mode: difference;
+}
+
+.spotlight {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  width: var(--spotlight-width);
+  height: 100%;
+  background-color: white;
+  border-radius: 50%;
+  animation: move-spotlight 8s linear infinite alternate;
+}
+
+@keyframes move-spotlight {
+  0% {
+    left: 0;
+  }
+  50% {
+    left: calc(100% - var(--spotlight-width));
+  }
+  100% {
+    left: 0;    
+  }
+}
